@@ -4,7 +4,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.tools import TavilySearchResults
-import requests
+from models import models
 
 # set default model
 if 'default_model' not in st.session_state:
@@ -18,18 +18,7 @@ search = TavilySearchResults(max_results=2)
 # function to change default LLM
 def change_model():
     st.session_state['default_model'] = st.session_state.model
-    print(st.session_state)
     return
-
-# get list of models
-url = "https://api.groq.com/openai/v1/models"
-
-headers = {
-    "Authorization": f"Bearer {st.secrets['GROQ_API_KEY']}",
-    "Content-Type": "application/json"
-}
-
-models = [model['id'] for model in requests.get(url, headers=headers).json()['data'] if model['context_window'] == 8192 and model['active'] == True] 
 
 # Page Config
 st.set_page_config(page_title="AI Sales Assistant")
@@ -42,7 +31,7 @@ st.sidebar.selectbox('Model', models, index=models.index(st.session_state['defau
 
 # Main Page
 st.title('AI Sales Assistant')
-st.markdown(f"AI Sales Assistant Powered by Groq and **{st.session_state.default_model}** as LLM.")
+st.text(f"AI Sales Assistant Powered by Groq. Settings: LLM **{st.session_state.default_model}**, temperature **{temperature}**.")
 st.markdown("### Help sales teams gather insights about their products, competitors, and target customers.")
 
 with st.form("product_research", clear_on_submit=True):
