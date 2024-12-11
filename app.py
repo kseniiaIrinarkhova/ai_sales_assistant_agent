@@ -120,9 +120,10 @@ with st.form("product_research", clear_on_submit=True):
                     company_data = f"Company: {company_name}"
                 # getting product data
                 product_data = product_chain.invoke({'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'value_proposition':value_proposition})
-                comptitors_list = list(filter(lambda competitor: competitor.startswith('http'),re.split(r"[,; .\n]\s*", competitors)))
-                print(comptitors_list)
-                competitors_data = competitors
+                # getting competitors data
+                competitors_list = list(filter(lambda competitor: competitor.startswith('http'),re.split(r"[ ,\n]\s*", competitors)))
+                # get all data about competitors based on web sites
+                competitors_data = " ".join([f"{competitor}: {search.invoke(competitor)[0]['content']}" for competitor in competitors_list])
                 # getting insights
                 insights = analysis_chain.invoke({'company_name': company_name, 'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'product_data':product_data, 'value_proposition':value_proposition, 'competitors_data': competitors_data, 'target_customer': target_customer,'target_market': target_market,'optional': optional})
         else:
