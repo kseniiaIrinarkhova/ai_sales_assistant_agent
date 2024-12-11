@@ -7,12 +7,16 @@ from langchain_community.tools import TavilySearchResults
 from models import models
 import re
 
-# set default model
+# set default states
 if 'default_model' not in st.session_state:
-    st.session_state['default_model'] = 'llama3-8b-8192'
+    st.session_state['default_model'] = 'llama3-8b-8192'\
 
 # Model and Agent Tools
-llm = ChatGroq(api_key=st.secrets['GROQ_API_KEY'])
+llm = ChatGroq(
+    api_key=st.secrets['GROQ_API_KEY'],
+    model=st.session_state['default_model'],
+    temperature=st.session_state['temperature']
+    )
 parser = StrOutputParser()
 search = TavilySearchResults(max_results=2)
 
