@@ -2,10 +2,10 @@
 import streamlit as st
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
-from langchain.chains import LLMChain, SequentialChain
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.tools import TavilySearchResults
 from models import models
+import re
 
 # set default model
 if 'default_model' not in st.session_state:
@@ -120,8 +120,8 @@ with st.form("product_research", clear_on_submit=True):
                     company_data = f"Company: {company_name}"
                 # getting product data
                 product_data = product_chain.invoke({'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'value_proposition':value_proposition})
-                # comptitors_list = competitors.split('[\n, ]')
-                # print(comptitors_list)
+                comptitors_list = list(filter(lambda competitor: competitor.startswith('http'),re.split(r"[,; .\n]\s*", competitors)))
+                print(comptitors_list)
                 competitors_data = competitors
                 # getting insights
                 insights = analysis_chain.invoke({'company_name': company_name, 'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'product_data':product_data, 'value_proposition':value_proposition, 'competitors_data': competitors_data, 'target_customer': target_customer,'target_market': target_market,'optional': optional})
