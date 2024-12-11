@@ -104,13 +104,18 @@ with st.form("product_research", clear_on_submit=True):
     # Output data
     insights = ""
     product_data = ""
+    note =""
 
     # Check if the form is submitted
     if submit_button:
         if company_name and product_name:
             with st.spinner("Analyzing the data..."):
                 if company_website:
-                    company_data = search.invoke(company_website)
+                    if company_website.startswith('http'):
+                        company_data = search.invoke(company_website)
+                    else:
+                        company_data = f"Company: {company_name}"
+                        st.warning(f'Could not find data for company website: **{company_website}**. Analysis would be provided based on input data')
                 else:
                     company_data = f"Company: {company_name}"
                 # getting product data
@@ -118,6 +123,7 @@ with st.form("product_research", clear_on_submit=True):
                 competitors_data = competitors
                 # getting insights
                 insights = analysis_chain.invoke({'company_name': company_name, 'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'product_data':product_data, 'value_proposition':value_proposition, 'competitors_data': competitors_data, 'target_customer': target_customer,'target_market': target_market,'optional': optional})
+
 
 if product_data:
     st.markdown("### Product Data")
