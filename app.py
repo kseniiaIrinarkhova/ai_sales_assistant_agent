@@ -11,14 +11,14 @@ import re
 if 'default_model' not in st.session_state:
     st.session_state['default_model'] = 'llama3-8b-8192'\
 
-if 'temperature' not in st.session_state:
-    st.session_state['temperature'] = 0.5
+if 'default_temperature' not in st.session_state:
+    st.session_state['default_temperature'] = 0.5
 
 # Model and Agent Tools
 llm = ChatGroq(
     api_key=st.secrets['GROQ_API_KEY'],
     model=st.session_state['default_model'],
-    temperature=st.session_state['temperature']
+    temperature=st.session_state['default_temperature']
     )
 parser = StrOutputParser()
 search = TavilySearchResults(max_results=2)
@@ -28,12 +28,16 @@ def change_model():
     st.session_state['default_model'] = st.session_state.model
     return
 
+def change_temperature():
+    st.session_state['default_temperature'] = st.session_state.temperature
+    return
+
 # Page Config
 st.set_page_config(page_title="AI Sales Assistant")
 
 # Sidebar
 st.sidebar.title("AI Sales Assistant settings")
-temperature = st.sidebar.slider('Temperature', min_value=0.0, max_value=1.0, value=0.5, step=0.01, key='temperature')
+temperature = st.sidebar.slider('Temperature', min_value=0.0, max_value=1.0, value=0.5, step=0.01, key='temperature', on_change=change_temperature)
 st.sidebar.selectbox('Model', models, index=models.index(st.session_state['default_model']), key='model', on_change=change_model)
 
 
