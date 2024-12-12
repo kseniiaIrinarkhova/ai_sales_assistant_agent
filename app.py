@@ -58,7 +58,7 @@ analysis_prompt = """
     ## Competitor Mentions: Mentions of competitors from {competitors_data}.
     - ### Competitor Analysis: Insights into competitors.
     - ### Competitor Comparison: Comparison of the company with competitors using {value_proposition} if they provided as main advantages.
-    ## Leadership Information: Relevant company's leaders and their roles.
+    ## Leadership Information: Relevant company leaders and their roles.
     ## Product/Strategy Summary: Insights from {product_data}.
     ## Target Market: Pros and cons of launching the product into a {target_market}.
     ## References: Links to articles, press releases, or other sources.
@@ -79,7 +79,7 @@ product_prompt = """
 # draft email prompt
 email_prompt = """
     You are an AI email assistant. 
-    Create an email template to {target_customer}, based on the {report}. Emphasize the benefits of the product and the company's strengths. Include {optional} information if provided.
+    Create an email template to {target_customer}, based on the {report}. Emphasize the benefits of the product and the company's strengths, and positive influence on {target_market}. Include {optional} information if provided.
     Sign the email with the name of the company CEO if it was mentioned in the Leadership Information from the report.
 """
 
@@ -152,6 +152,7 @@ with st.form("product_research"):
                 email_draft = email_chain.invoke({
                     'target_customer': target_customer, 
                     'report': report_insights, 
+                    'target_market': target_market,
                     'optional': optional})
         else:
             st.error('Please provide the company name and product name')
