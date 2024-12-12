@@ -85,7 +85,7 @@ email_prompt = """
 
 # prompt templates
 
-analysis_prompt_template = ChatPromptTemplate.from_template(analysis_prompt)
+analysis_prompt_template = PromptTemplate.from_template(analysis_prompt)
 product_prompt_template = PromptTemplate.from_template(product_prompt)
 email_prompt_template = PromptTemplate.from_template(email_prompt)
 
@@ -100,6 +100,15 @@ with st.form("product_research"):
     # form fields
     product_name = st.text_input("Product")
     product_category = st.text_input("Product Category")
+    # product description tabs
+    st.container()
+    prod_URL, prod_info, frod_upload = st.tabs(["Product URL", "Product Info", "Upload File"])
+    prod_URL.subheader("Provide URL with product description")
+    product_URL = prod_URL.text_input("Product URL")
+    prod_info.subheader("Provide product description")
+    product_description = prod_info.text_area("Product Description")
+    frod_upload.subheader("Upload file with product description")
+    uploaded_file = frod_upload.file_uploader("Choose a file")
     value_proposition = st.text_area("Value Proposition")
     company_name = st.text_input("Company Name")
     company_website = st.text_input("Company Website").strip()    
@@ -169,3 +178,15 @@ if report_insights:
 if email_draft:
     with st.expander("Email Template"):
         st.markdown(email_draft)
+
+
+st.markdown("""
+<style>
+
+	.stTabs {
+        padding: 5px;
+  		border-radius: 15px;
+        border: 2px solid #f1f1f1;
+	}
+
+</style>""", unsafe_allow_html=True)
