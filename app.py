@@ -11,6 +11,9 @@ import re
 if 'default_model' not in st.session_state:
     st.session_state['default_model'] = 'llama3-8b-8192'\
 
+if 'temperature' not in st.session_state:
+    st.session_state['temperature'] = 0.5
+
 # Model and Agent Tools
 llm = ChatGroq(
     api_key=st.secrets['GROQ_API_KEY'],
