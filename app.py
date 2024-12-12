@@ -58,11 +58,10 @@ analysis_prompt = """
     ## Competitor Mentions: Mentions of competitors from {competitors_data}.
     - ### Competitor Analysis: Insights into competitors.
     - ### Competitor Comparison: Comparison of the company with competitors using {value_proposition} if they provided as main advantages.
-    3. ## Leadership Information: Relevant company's leaders and their roles.
-    4. ## Product/Strategy Summary: Insights from {product_data}.
-    5. ## Target Market: Pros and cons of launching the product into a {target_market}.
-    3. ##References: Links to articles, press releases, or other sources.
-
+    ## Leadership Information: Relevant company's leaders and their roles.
+    ## Product/Strategy Summary: Insights from {product_data}.
+    ## Target Market: Pros and cons of launching the product into a {target_market}.
+    ## References: Links to articles, press releases, or other sources.
     """
 
 
@@ -70,19 +69,17 @@ analysis_prompt = """
 product_prompt = """
     You are a helpful AI assistant.
     Your job is to analyze provided {company_data} and find information about {product_name}.
-     If you cannot find information about {product_name}, return only this sentence:
+    If you cannot find information about {product_name}, return only this sentence:
     The product is {product_name}. It belongs to {product_category} category. The value proposition is {value_proposition}.
     Otherwise,
     Return detailed summary about {product_name}. Include information about {product_category} and {value_proposition} if provided.
-   
-    
+      
     """
 
 # draft email prompt
 email_prompt = """
     You are an AI email assistant. 
-     # Email template
-    Based on the {report}, create an email template to {target_customer}. Emphasize the benefits of the product and the company's strengths. Include {optional} information if provided.
+    Create an email template to {target_customer}, based on the {report}. Emphasize the benefits of the product and the company's strengths. Include {optional} information if provided.
     Sign the email with the name of the company CEO if it was mentioned in the Leadership Information from the report.
 """
 
@@ -113,9 +110,9 @@ with st.form("product_research"):
     submit_button = st.form_submit_button(label='Submit')
 
     # Output data
-    insights = ""
+    report_insights = ""
     product_data = ""
-    note =""
+    email_draft = ""
 
     # Check if the form is submitted
     if submit_button:
@@ -130,13 +127,17 @@ with st.form("product_research"):
                 else:
                     company_data = f"Company: {company_name}"
                 # getting product data
-                product_data = product_chain.invoke({'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'value_proposition':value_proposition})
+                product_data = product_chain.invoke({
+                    'company_data': company_data, 
+                    'product_name': product_name, 
+                    'product_category': product_category, 
+                    'value_proposition':value_proposition})
                 # getting competitors data
                 competitors_list = list(filter(lambda competitor: competitor.startswith('http'),re.split(r"[ ,\n]\s*", competitors)))
                 # get all data about competitors based on web sites
                 competitors_data = " ".join([f"{competitor}: {search.invoke(competitor)[0]['content']}" for competitor in competitors_list])
-                # getting insights
-                insights = analysis_chain.invoke({
+                # getting insights' report
+                report_insights = analysis_chain.invoke({
                     'company_name': company_name, 
                     'company_data': company_data, 
                     'product_name': product_name, 
@@ -147,14 +148,23 @@ with st.form("product_research"):
                     # 'target_customer': target_customer,
                     'target_market': target_market,
                     'optional': optional})
+                # getting email template
+                email_draft = email_chain.invoke({
+                    'target_customer': target_customer, 
+                    'report': report_insights, 
+                    'optional': optional})
         else:
             st.error('Please provide the company name and product name')
 
 
 if product_data:
-    st.markdown("### Product Data")
-    st.markdown(product_data)
+    with st.expander("Product Data"):
+        st.markdown(product_data)
 
-if insights:
-    st.markdown("### Product Insights")
-    st.markdown(insights)
+if report_insights:
+    with st.expander("Product Insights"):
+        st.markdown(report_insights)
+
+if email_draft:
+    with st.expander("Email Template"):
+        st.markdown(email_draft)
