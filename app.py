@@ -4,6 +4,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_community.tools import TavilySearchResults
+from PyPDF2 import PdfReader
 from models import models
 import re
 
@@ -70,9 +71,9 @@ product_prompt = """
     You are a helpful AI assistant.
     Your job is to analyze provided {company_data} and find information about {product_name}.
     If you cannot find information about {product_name}, return only this sentence:
-    The product is {product_name}. It belongs to {product_category} category. The value proposition is {value_proposition}.
+    The product is {product_name}. It belongs to {product_category} category. The value proposition is {value_proposition}. Provided information is {product_info}.
     Otherwise,
-    Return detailed summary about {product_name}. Include information about {product_category} and {value_proposition} if provided.
+    Return detailed summary about {product_name}. Include information about {product_category}, {value_proposition}, and {product_info} if provided.
       
     """
 
@@ -101,14 +102,13 @@ with st.form("product_research"):
     product_name = st.text_input("Product")
     product_category = st.text_input("Product Category")
     # product description tabs
-    st.container()
     prod_URL, prod_info, frod_upload = st.tabs(["Product URL", "Product Info", "Upload File"])
     prod_URL.subheader("Provide URL with product description")
-    product_URL = prod_URL.text_input("Product URL")
+    product_URL = prod_URL.text_input("Product URL", key='product_URL')
     prod_info.subheader("Provide product description")
-    product_description = prod_info.text_area("Product Description")
+    product_description = prod_info.text_area("Product Description", key='product_description')
     frod_upload.subheader("Upload file with product description")
-    uploaded_file = frod_upload.file_uploader("Choose a file")
+    uploaded_file = frod_upload.file_uploader("Choose a PDF file with product description", type=['pdf'], key='product_file')
     value_proposition = st.text_area("Value Proposition")
     company_name = st.text_input("Company Name")
     company_website = st.text_input("Company Website").strip()    
@@ -122,11 +122,13 @@ with st.form("product_research"):
     report_insights = ""
     product_data = ""
     email_draft = ""
+    product_info = ""
 
     # Check if the form is submitted
     if submit_button:
         if company_name and product_name:
             with st.spinner("Analyzing the data..."):
+                # getting company data
                 if company_website:
                     if company_website.startswith('http'):
                         company_data = search.invoke(company_website)
@@ -136,10 +138,20 @@ with st.form("product_research"):
                 else:
                     company_data = f"Company: {company_name}"
                 # getting product data
+                if product_URL and product_URL.startswith('http'):
+                    product_info += search.invoke(product_URL)[0]['content']
+                if product_description:
+                    product_info += product_description
+                if uploaded_file:
+                    reader = PdfReader(uploaded_file)
+                    for page in reader.pages:
+                        product_info += page.extract_text()
+                print(product_info)
                 product_data = product_chain.invoke({
                     'company_data': company_data, 
                     'product_name': product_name, 
-                    'product_category': product_category, 
+                    'product_category': product_category,
+                    'product_info': product_info, 
                     'value_proposition':value_proposition})
                 # getting competitors data
                 competitors_list = list(filter(lambda competitor: competitor.startswith('http'),re.split(r"[ ,\n]\s*", competitors)))

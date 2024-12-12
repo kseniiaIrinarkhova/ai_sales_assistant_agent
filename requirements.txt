@@ -2,3 +2,4 @@ streamlit
 langchain
 langchain_groq
 langchain_community
+PyPDF2
