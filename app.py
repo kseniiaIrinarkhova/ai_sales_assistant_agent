@@ -138,15 +138,17 @@ with st.form("product_research"):
                 else:
                     company_data = f"Company: {company_name}"
                 # getting product data
-                if product_URL and product_URL.startswith('http'):
-                    product_info += search.invoke(product_URL)[0]['content']
-                if product_description:
-                    product_info += product_description
-                if uploaded_file:
-                    reader = PdfReader(uploaded_file)
-                    for page in reader.pages:
-                        product_info += page.extract_text()
-                print(product_info)
+                try:
+                    if product_URL and product_URL.startswith('http'):
+                        product_info += search.invoke(product_URL)[0]['content']
+                    if product_description:
+                        product_info += product_description
+                    if uploaded_file:
+                        reader = PdfReader(uploaded_file)
+                        for page in reader.pages:
+                            product_info += page.extract_text()
+                except Exception as e:
+                    st.warning(f'There is some issues with the product description: {e}')
                 product_data = product_chain.invoke({
                     'company_data': company_data, 
                     'product_name': product_name, 
