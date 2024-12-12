@@ -44,7 +44,7 @@ st.sidebar.selectbox('Model', models, index=models.index(st.session_state['defau
 
 # Main Page
 st.title('AI Sales Assistant')
-st.text(f"AI Sales Assistant Powered by Groq. Settings: LLM **{st.session_state.default_model}**, temperature **{temperature}**.")
+st.markdown(f"AI Sales Assistant Powered by Groq. Settings: LLM **{st.session_state.default_model}**, temperature **{temperature}**.")
 st.markdown("### Help sales teams gather insights about their products, competitors, and target customers.")
 
 # LLM settup
