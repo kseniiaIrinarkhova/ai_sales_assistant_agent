@@ -99,7 +99,7 @@ email_chain = email_prompt_template | llm | parser
 # Main form
 with st.form("product_research"):
     # form fields
-    product_name = st.text_input("Product")
+    product_name = st.text_input("Product", key='product_name')
     product_category = st.text_input("Product Category")
     # product description tabs
     prod_URL, prod_info, frod_upload = st.tabs(["Product URL", "Product Info", "Upload File"])
@@ -116,7 +116,7 @@ with st.form("product_research"):
     target_market = st.text_input("Target Market")
     target_customer = st.text_input("Target Customer Name")
     optional = st.text_area("Optional")
-    submit_button = st.form_submit_button(label='Submit')
+    submit_button = st.form_submit_button(label='Generate analysis')
 
     # Output data
     report_insights = ""
@@ -184,14 +184,29 @@ with st.form("product_research"):
 if product_data:
     with st.expander("Product Data"):
         st.markdown(product_data)
+        st.download_button(
+            label= "Download Product data as a text", 
+            data = product_data,
+            file_name = f"{st.session_state.product_name} info.txt",
+            mime="text/plain")
 
 if report_insights:
     with st.expander("Product Insights"):
         st.markdown(report_insights)
+        st.download_button(
+            label= "Download Product Insights as a text", 
+            data = report_insights,
+            file_name = f"{st.session_state.product_name} insights.txt",
+            mime="text/plain")
 
 if email_draft:
     with st.expander("Email Template"):
         st.markdown(email_draft)
+        st.download_button(
+            label= "Download Email Template as a text", 
+            data = email_draft,
+            file_name = f"{st.session_state.product_name} email draft.txt",
+            mime="text/plain")
 
 
 st.markdown("""
