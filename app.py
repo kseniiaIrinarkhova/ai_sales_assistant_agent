@@ -50,62 +50,62 @@ st.markdown("### Help sales teams gather insights about their products, competit
 # prompts
 #prompt for sales analysis
 analysis_prompt = """
-    You are a helpful AI Sales assistant. Your job is to analyze the provided data to generate insights. Focus on company strategy, competitor analysis, and leadership info and using optional information if provided. 
-    Create a report based on provided structure:
-    # Product report
-    1. ## Company Strategy: Insights into the company/'s activities and priorities from company_data.
-    2. ## Competitor Mentions: Mentions of competitors from competitors_data.
-    2.1 ### Competitor Analysis: Insights into competitors from competitors_data.
-    2.2 ### Competitor Comparison: Comparison of the company with competitors from competitors_data using value_proposition if they provided as main advantages.
-    3. ## Leadership Information: Relevant leaders and their roles.
-    4. ## Product/Strategy Summary: Insights from product_data.
-    5. ## Target Market: Proc and cons of launching the product into a target market from target_market.
+    You are a helpful AI Sales assistant. Your job is to analyze the provided data to generate insights about {product_name} and {product_category}.
+    Focus on {company_name} strategy, competitor analysis, and leadership info, and use {optional} information if provided.
+    Create a report based on the provided structure:
+    # Product Analysis Report
+    ## Company Strategy: Insights into the company/'s activities and priorities from {company_data}.
+    ## Competitor Mentions: Mentions of competitors from {competitors_data}.
+    - ### Competitor Analysis: Insights into competitors.
+    - ### Competitor Comparison: Comparison of the company with competitors using {value_proposition} if they provided as main advantages.
+    3. ## Leadership Information: Relevant company's leaders and their roles.
+    4. ## Product/Strategy Summary: Insights from {product_data}.
+    5. ## Target Market: Pros and cons of launching the product into a {target_market}.
     3. ##References: Links to articles, press releases, or other sources.
 
-    # Email template
-    Based on report, create an email template to target_customer. Emphasize the benefits of the product and the company's strengths. Include optional information if provided. 
-    Sing the imail with the name of company CEO if it was mentioned in Leadership Information from report.
-
-    Input variables:
-    - company_name: {company_name}
-    - company_data: {company_data}
-    - product_name: {product_name}
-    - product_category: {product_category}
-    - product_data: {product_data}
-    - value_proposition: {value_proposition}
-    - competitors_data: {competitors_data}
-    - target_market: {target_market}
-    - target_customer: {target_customer}
-    - optional: {optional}
-
     """
+
 
 #prompt for product data creation
 product_prompt = """
-    You are a helpful AI assistant. 
-    Your job is to analyse provided {company_data} and find information about {product_name}. 
-    Include information about {product_category} and {value_proposition} if provided. 
-    If you can not find information about product, return its name and category.
+    You are a helpful AI assistant.
+    Your job is to analyze provided {company_data} and find information about {product_name}.
+     If you cannot find information about {product_name}, return only this sentence:
+    The product is {product_name}. It belongs to {product_category} category. The value proposition is {value_proposition}.
+    Otherwise,
+    Return detailed summary about {product_name}. Include information about {product_category} and {value_proposition} if provided.
+   
+    
     """
+
+# draft email prompt
+email_prompt = """
+    You are an AI email assistant. 
+     # Email template
+    Based on the {report}, create an email template to {target_customer}. Emphasize the benefits of the product and the company's strengths. Include {optional} information if provided.
+    Sign the email with the name of the company CEO if it was mentioned in the Leadership Information from the report.
+"""
 
 # prompt templates
 
 analysis_prompt_template = ChatPromptTemplate.from_template(analysis_prompt)
-product_prompt_template = PromptTemplate.from_template(template=  product_prompt)
+product_prompt_template = PromptTemplate.from_template(product_prompt)
+email_prompt_template = PromptTemplate.from_template(email_prompt)
 
 #chains
 
 product_chain =  product_prompt_template | llm | parser
 analysis_chain = analysis_prompt_template | llm | parser
+email_chain = email_prompt_template | llm | parser
 
 # Main form
-with st.form("product_research", clear_on_submit=True):
+with st.form("product_research"):
     # form fields
     product_name = st.text_input("Product")
     product_category = st.text_input("Product Category")
     value_proposition = st.text_area("Value Proposition")
     company_name = st.text_input("Company Name")
-    company_website = st.text_input("Company Website")    
+    company_website = st.text_input("Company Website").strip()    
     competitors = st.text_area("Competitors")
     target_market = st.text_input("Target Market")
     target_customer = st.text_input("Target Customer Name")
@@ -136,7 +136,17 @@ with st.form("product_research", clear_on_submit=True):
                 # get all data about competitors based on web sites
                 competitors_data = " ".join([f"{competitor}: {search.invoke(competitor)[0]['content']}" for competitor in competitors_list])
                 # getting insights
-                insights = analysis_chain.invoke({'company_name': company_name, 'company_data': company_data, 'product_name': product_name, 'product_category': product_category, 'product_data':product_data, 'value_proposition':value_proposition, 'competitors_data': competitors_data, 'target_customer': target_customer,'target_market': target_market,'optional': optional})
+                insights = analysis_chain.invoke({
+                    'company_name': company_name, 
+                    'company_data': company_data, 
+                    'product_name': product_name, 
+                    'product_category': product_category, 
+                    'product_data':product_data, 
+                    'value_proposition':value_proposition, 
+                    'competitors_data': competitors_data, 
+                    # 'target_customer': target_customer,
+                    'target_market': target_market,
+                    'optional': optional})
         else:
             st.error('Please provide the company name and product name')
 
